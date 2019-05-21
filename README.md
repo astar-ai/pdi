@@ -1,10 +1,11 @@
 # PDI: Panorama Depth Image
 
-PDI provides a solution to get the panorama depth map based on a fisheye stereo image. For more information see
-[https://astar.ai](https://astar.ai).
 <p align="center">
   <img src="http://astar.support/dotai/pdi_3d_scene.png">
 </p>
+
+PDI provides a solution to get the panorama depth map based on a fisheye stereo image. For more information see
+[https://astar.ai](https://astar.ai).
 
 The following steps have been tested and passed on Ubuntu **16.04.5**.
 
@@ -56,6 +57,7 @@ Each CaliCam stereo/mono camera has a **UNIQUE** parameter file. Please download
 
 #### 5.1 'Fisheye Image' window
 The first two trackbars are used to adjust the **numDisparities** and **blockSize** for [OpenCV stereo matching functions](https://docs.opencv.org/3.0-beta/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#stereobm). 
+
 The third trackbar 'Threshold' is used to adjust the field of view of the camera.
 
 #### 5.2 'Panorama 3D Scene' OpenGL window
