@@ -1,6 +1,10 @@
 # PDI: Panorama Depth Image
 
 <p align="center">
+  <img src="http://astar.support/dotai/pdi_fisheye_image.jpg">
+</p>
+
+<p align="center">
   <img src="http://astar.support/dotai/pdi_3d_scene.png">
 </p>
 
