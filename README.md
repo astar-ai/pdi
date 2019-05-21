@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="http://astar.support/dotai/pdi_3d_scene.png">
+  <img src="http://astar.support/dotai/pdi_3d_scene1.png">
 </p>
 
 PDI provides a solution to get the panorama depth image based on a fisheye stereo image. For more information see
