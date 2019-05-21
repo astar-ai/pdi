@@ -39,7 +39,7 @@ The first two trackbars are used to adjust the **numDisparities** and **blockSiz
 The third trackbar 'Threshold' is used to adjust the field of view of the camera.
 
 #### 5.2 'Panorama 3D Scene' OpenGL window
-Mouse button: left drag - rotate, middle drag - pan, middle scroll: zoom, right drag: zoom. 
+Mouse button: left drag - rotate, middle drag - pan, middle scroll - zoom, right drag - zoom. 
 
 PDI uses **GLWindow** library from [http://ethaneade.org/](http://ethaneade.org/).
 
