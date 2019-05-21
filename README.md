@@ -1,7 +1,10 @@
 # PDI: Panorama Depth Image
 
-For more information see
+PDI provides a solution to get the panorama depth map based on a fisheye stereo image. For more information see
 [https://astar.ai](https://astar.ai).
+<p align="center">
+  <img src="http://astar.support/dotai/pdi_3d_scene.png">
+</p>
 
 The following steps have been tested and passed on Ubuntu **16.04.5**.
 
