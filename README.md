@@ -40,6 +40,7 @@ The third trackbar 'Threshold' is used to adjust the field of view of the camera
 
 #### 5.2 'Panorama 3D Scene' OpenGL window
 Mouse button: left drag - rotate, middle drag - pan, middle scroll: zoom, right drag: zoom
+PDI uses **GLWindow** library from [http://ethaneade.org/](http://ethaneade.org/).
 
 #### 5.3 Exit
 Press 'q' or 'Esc' key on the 'Fisheye Image' window to exit.
