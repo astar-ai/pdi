@@ -28,10 +28,10 @@ SceneWindow::Viewpoint::Viewpoint()
 {
     target[0] = -0.05;
     target[1] = -0.75;
-    target[2] =  0.;
-    azimuth = 0;
+    target[2] = 0.;
+    azimuth   = 0.;
     elevation = 0.0;
-    distance = 4.0;
+    distance  = 8.0;
 }
 
 static void set_viewpoint(const SceneWindow::Viewpoint &vp)
@@ -170,7 +170,7 @@ bool SceneWindow::on_mouse_move(GLWindow& win, int state, int x, int y)
 
 bool SceneWindow::on_mouse_wheel(GLWindow& win, int state, int x, int y, int dx, int dy)
 {
-    viewpoint.distance *= ::exp(dy * -0.01);
+    viewpoint.distance *= ::exp(dy * -0.08);
     return true;
 }
 
