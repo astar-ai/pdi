@@ -253,24 +253,24 @@ void PointClouds(const cv::Mat& disp_img,
       if (isnan(zz))
         continue;
 
-      double xc = zz * ee;
-      double yc = zz * ff;
-      double zc = zz - xi;
+      double xs = zz * ee;
+      double ys = zz * ff;
+      double zs = zz - xi;
 
-      double tt   = acos(-xc);
-      double pp   = acos(-yc / hypot(yc, zc));
+      double tt   = acos(-xs);
+      double pp   = acos(-ys / hypot(ys, zs));
       float  disp = disp_img.at<float>((int) (pp * h_pi), (int) (tt * w_pi));
 
       if (disp <= 0.f)
         continue;
 
-      double diff  = pi_w * disp;
-      double depth = bl * sin(tt - diff) / sin(diff);
+      double diff = pi_w * disp;
+      double mgnt = bl * sin(tt - diff) / sin(diff);
 
       cv::Vec3b color = feim.at<cv::Vec3b>(r,c);
 
       PCL pcl;
-      pcl.pts = cv::Vec3f(xc * depth, yc * depth, zc * depth);
+      pcl.pts = cv::Vec3f(xs, ys, zs) * mgnt;
       pcl.clr = cv::Vec3b(color(2), color(1), color(0));
       pcl_vec.push_back(pcl);
     }
@@ -302,8 +302,7 @@ int main(int argc, char** argv) {
   LoadParameters(param_name);
   InitRectifyMap();
 
-  glwindow::SceneWindow* scene =
-      new glwindow::SceneWindow(960, 720, "Panorama 3D Scene");
+  glwindow::SceneWindow scene(960, 720, "Panorama 3D Scene");
 
   cv::VideoCapture vcapture;
   if (live) {
@@ -353,10 +352,10 @@ int main(int argc, char** argv) {
     DisparityImage(ll_imgl, ll_imgr, disp_img);
     PointClouds(disp_img, fe_img, pcl_vec);
 
-    if (scene->win.alive()) {
-      if (scene->start_draw()) {
+    if (scene.win.alive()) {
+      if (scene.start_draw()) {
         DrawScene(pcl_vec);
-        scene->finish_draw();
+        scene.finish_draw();
       }
     }
 
@@ -367,7 +366,6 @@ int main(int argc, char** argv) {
       break;
   }
 
-  delete scene;
   return 0;
 }
 
