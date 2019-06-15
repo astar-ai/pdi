@@ -37,6 +37,11 @@ int     cap_cols, cap_rows, img_width;
 cv::Mat T, Kl, Kr, Dl, Dr, xil, xir, Rl, Rr;
 cv::Mat fmap[2], lmap[2][2], Kfe;
 
+// CaliCam stereo is calibrated at 2560x960
+// If you want to process image at 1280x480, set half_size to true.
+
+bool half_size = true;
+
 void LoadParameters(std::string file_name) {
   cv::FileStorage fs(file_name, cv::FileStorage::READ);
   if (!fs.isOpened()) {
@@ -56,6 +61,14 @@ void LoadParameters(std::string file_name) {
   fs["Rr"       ] >> Rr;
   fs["T"        ] >> T;
   fs.release();
+
+  if (half_size) {
+    cap_size  = cap_size / 2;
+    Kl.row(0) = Kl.row(0) / 2.;
+    Kl.row(1) = Kl.row(1) / 2.;
+    Kr.row(0) = Kr.row(0) / 2.;
+    Kr.row(1) = Kr.row(1) / 2.;
+  }
 
   cap_cols  = cap_size.width;
   cap_rows  = cap_size.height;
@@ -117,8 +130,8 @@ void InitRectifyMap(cv::Mat K,
       }
 
       if (mode == RECT_LONGLAT) {
-        double tt = MatRowMul(Ki, c, r, 1., 0); // w/pi
-        double pp = MatRowMul(Ki, c, r, 1., 1); // h/pi
+        double tt = MatRowMul(Ki, c, r, 1., 0);
+        double pp = MatRowMul(Ki, c, r, 1., 1);
 
         double xn = -cos(tt);
         double yn = -sin(tt) * cos(pp);
@@ -174,6 +187,10 @@ int rect_cols = 640, rect_rows = 480;
 void InitRectifyMap() {
   Kfe = cv::Mat::eye(3, 3, CV_64F);
   Kfe.at<double>(0,0) = Kl.at<double>(0,0) * 0.4;
+
+  if (half_size)
+    Kfe.at<double>(0,0) = Kl.at<double>(0,0) * 0.8;
+
   Kfe.at<double>(0,2) = rect_cols  / 2. - 0.5;
   Kfe.at<double>(1,1) = Kfe.at<double>(0,0);
   Kfe.at<double>(1,2) = rect_rows / 2. - 0.5;
@@ -329,6 +346,9 @@ int main(int argc, char** argv) {
 
   cv::Mat raw_img = cv::imread(image_name, cv::IMREAD_COLOR);
   cv::Mat raw_imgl, raw_imgr, fe_img, ll_imgl, ll_imgr;
+
+  if (half_size)
+    cv::resize(raw_img, raw_img, cv::Size(), 0.5, 0.5);
 
   while (1) {
     if (live)
