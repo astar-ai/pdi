@@ -17,9 +17,9 @@ The following steps have been tested and passed on Ubuntu 16.04.5.
 
 ### 1. Theoretical Background
 
-**Fisheye Camera Model**: C. Mei and P. Rives, Single view point omnidirectional camera calibration from planar grids, in ICRA 2007.
+Fisheye Camera Model: C. Mei and P. Rives, Single view point omnidirectional camera calibration from planar grids, in ICRA 2007.
 
-**Stereo Reconstruction**: S. Li, Binocular spherical stereo, IEEE Transactions on Intelligent Transportation Systems, 9(4): 589-600, 2009.
+Stereo Reconstruction: S. Li, Binocular spherical stereo, IEEE Transactions on Intelligent Transportation Systems, 9(4): 589-600, 2009.
 
 ### 2. OpenCV Installation
 
