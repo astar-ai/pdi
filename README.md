@@ -11,7 +11,9 @@
 PDI provides a solution to get the panorama depth image from a single fisheye stereo image pair. For more information see
 [https://astar.ai](https://astar.ai).
 
-The following steps have been tested and passed on Ubuntu **16.04.5**.
+A wider view angle always benefits the environmental perception ability. **PDI is opening a New Era of 3D vision computation using the fisheye camera!**
+
+The following steps have been tested and passed on Ubuntu 16.04.5.
 
 ### 1. OpenCV Installation
 
