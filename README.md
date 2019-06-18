@@ -49,7 +49,7 @@ PDI uses **GLWindow** library from [http://ethaneade.org/](http://ethaneade.org/
 Press 'q' or 'Esc' key on the 'Fisheye Image' window to exit.
 
 ### 6. Live Mode
-To run CaliCam in a live mode, please change the variable live to true:
+To run PDI in a live mode, please change the variable live to true:
 
 	bool      live = true;
 
