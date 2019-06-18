@@ -19,7 +19,7 @@ Fisheye Camera Model:
 C. Mei and P. Rives, Single View Point Omnidirectional Camera Calibration From Planar Grids, ICRA 2007.
 
 Fisheye Stereo Reconstruction:
-S. Li, Binocular Spherical Stereo, ITS, 9(4): 589-600, 2009.
+S. Li, Binocular Spherical Stereo, ITS 2009.
 
 ### 2. OpenCV Installation 
 
