@@ -11,6 +11,8 @@
 PDI provides a solution to get the panorama depth image from a single fisheye stereo image pair. A wider view angle always benefits the environmental perception ability. For more information see
 [https://astar.ai](https://astar.ai).
 
+Youtube [Demo Video](https://youtu.be/vXWHsYjEsx8) for the SLAM using PDI.
+
 The following steps have been tested and passed on Ubuntu 16.04.5.
 
 ### 1. Theoretical Background
