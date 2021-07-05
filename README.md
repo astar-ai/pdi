@@ -83,5 +83,5 @@ Each CaliCam stereo/mono camera has a **UNIQUE** parameter file. Please download
 </p>
 
 For more information see
-[http://linear-algebra.org](http://linear-algebra.org).
+[http://linear-algebra.org/en/index.html](http://linear-algebra.org).
 
