@@ -313,8 +313,8 @@ void DrawScene(const std::vector<PCL>& pcl_vec) {
 bool live = false; // To run live mode, you need a CaliCam from www.astar.ai
 
 int main(int argc, char** argv) {
-  std::string param_name = argc >= 2 ? argv[1] : "./astar_calicam.yml";
-  std::string image_name = argc == 3 ? argv[2] : "./wm_garden.jpg";
+  std::string param_name = argc >= 2 ? argv[1] : "../astar_calicam.yml";
+  std::string image_name = argc == 3 ? argv[2] : "../wm_garden.jpg";
 
   LoadParameters(param_name);
   InitRectifyMap();

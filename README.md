@@ -23,16 +23,16 @@ C. Mei and P. Rives, Single View Point Omnidirectional Camera Calibration From P
 Fisheye Stereo Reconstruction:
 S. Li, Binocular Spherical Stereo, ITS 2009.
 
-### 2. OpenCV Installation 
+### 2. Dependencies 
 
-Follow the steps in [CaliCam@GitHub](https://github.com/astar-ai/calicam).
+* **OpenCV**: Required at leat 3.0. Tested with OpenCV 3.4.0.
+* **OpenGL** and **X11**
 
 ### 3. Compile
 
-	git clone https://github.com/astar-ai/pdi.git
-	cd pdi
-	chmod 777 ./compile.sh
-	./compile.sh
+	mkdir build && cd build
+	cmake ..
+	make
 
 ### 4. Run
 
@@ -83,5 +83,5 @@ Each CaliCam stereo/mono camera has a **UNIQUE** parameter file. Please download
 </p>
 
 For more information see
-[http://linear-algebra.org](http://linear-algebra.org).
+[http://linear-algebra.org](http://linear-algebra.org/en/index.html).
 
