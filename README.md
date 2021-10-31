@@ -65,6 +65,7 @@ and run
 To run PDI in the **LIVE** mode, you need to download the calibration parameter file from online.
 Each CaliCam stereo/mono camera has a **UNIQUE** parameter file. Please download the corresponding parameter file by following the instructions at [https://astar.ai/collections/astar-products](https://astar.ai/collections/astar-products).
 
+<!---
 ### 8. Reference: A Visualized Course of Linear Algebra
 
 **Inverse of Matrix**
@@ -84,4 +85,5 @@ Each CaliCam stereo/mono camera has a **UNIQUE** parameter file. Please download
 
 For more information see
 [http://linear-algebra.org](http://linear-algebra.org/en/index.html).
+--->
 
