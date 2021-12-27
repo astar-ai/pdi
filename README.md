@@ -28,15 +28,19 @@ S. Li, Binocular Spherical Stereo, ITS 2009.
 * **OpenCV**: Required at leat 3.0. Tested with OpenCV 3.4.0.
 * **OpenGL** and **X11**
 
-### 3. Compile
-
+### 3. Run C++ Code
+#### Compile
 	mkdir build && cd build
 	cmake ..
 	make
-
-### 4. Run
-
+#### Run
 	./pdi
+
+### 4. Run Python Code
+
+	python pdi.py
+
+Python code does not support Operation mode.
 
 ### 5. Operation
 
