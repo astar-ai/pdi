@@ -6,7 +6,6 @@ import numpy as np
 
 #-------------------------------------------------------------------------------#
 
-fmap = [None, None]
 lmap = [[None, None], [None, None]]
 
 cap_cols = None
@@ -14,8 +13,8 @@ cap_rows = None
 img_width = None
 
 width_now = 640
-height_now = 480
-thr_now = 240
+height_now = 640
+thr_now = 0.75
 
 ndisp_now = 32
 wsize_now = 9
@@ -159,26 +158,12 @@ def init_undistort_rectify_map(k, d, r, knew, xi0, size, mode):
 def init_rectify_map():
   global mode, fmap, lmap, Kfisheye
 
-  ### fisheye
-  Kfisheye = np.identity(3, dtype = np.float64)
-  Kfisheye[0, 0] = Kl[0, 0] * 0.4
-  Kfisheye[1, 1] = Kfisheye[0, 0]
-  Kfisheye[0, 2] = width_now / 2 - 0.5
-  Kfisheye[1, 2] = height_now / 2 - 0.5
-
   ### longlat
   kRectLonglat = np.identity(3, dtype = np.float64)
-  kRectLonglat[0, 0] = width_now / math.pi
-  kRectLonglat[1, 1] = height_now / math.pi
+  kRectLonglat[0, 0] = (width_now - 1.) / math.pi
+  kRectLonglat[1, 1] = (height_now - 1.) / math.pi
 
   img_size = [height_now, width_now]
-
-  print("Initialize fisheye rectify map")
-  fmap[0], fmap[1] = init_undistort_rectify_map(
-      Kl, Dl, Rl, Kfisheye, xil, img_size, 'kRectFisheye')
-
-  global kii
-  kii = np.linalg.inv(Kfisheye)
 
   print("Initialize left longlat rectify map")
   lmap[0][0], lmap[0][1] = init_undistort_rectify_map(
@@ -220,48 +205,39 @@ property uchar blue
 end_header
 '''
 
-def write_ply(fn, disp_img, rect_imgl_fisheye):
-   cx = Kfisheye[0,2]
-   cy = Kfisheye[1,2]
-   b1 = cv2.norm(T)
+def write_ply(fn, disp_img, rect_imgl_longlat):
+   bl = cv2.norm(T)
+   pi_w = math.pi / (width_now - 1.)
 
-   w_pi = width_now  / math.pi
-   h_pi = height_now  / math.pi
-   pi_w = math.pi / width_now
-
-   colors = np.zeros_like(rect_imgl_fisheye, dtype='f')
-   points = np.zeros_like(rect_imgl_fisheye, dtype='f')
-   colors_img = cv2.cvtColor(rect_imgl_fisheye, cv2.COLOR_BGR2RGB)
+   colors = np.zeros_like(rect_imgl_longlat, dtype='f')
+   points = np.zeros_like(rect_imgl_longlat, dtype='f')
+   colors_img = cv2.cvtColor(rect_imgl_longlat, cv2.COLOR_BGR2RGB)
    rows1 = colors_img.shape[0]
    cols1 = colors_img.shape[1]
 
    for r in range(rows1):
      for c in range(cols1):
-        if (math.hypot(c - cx, r - cy) > thr_now):
-           continue
-
-        cr2 = np.array([c, r, 1.])
-        ee = np.dot(kii[0, :], cr2)
-        ff = np.dot(kii[1, :], cr2)
-        zz = 2. / (ee * ee + ff * ff + 1.)
-
-        if (np.isnan(zz)):
-          continue
-
-        xn = zz * ee
-        yn = zz * ff
-        zn = zz - 1
-
-        tt = math.acos(-xn)
-        pp = math.acos(-yn / math.hypot(yn, zn))
-        disp = disp_img[int(pp * h_pi), int(tt * w_pi)]
+        disp = disp_img[r, c]
         if (disp <= 0.):
            continue
 
+        tt = (c / (cols1 - 1.) - 0.5) * math.pi
+        pp = (r / (rows1 - 1.) - 0.5) * math.pi
+        
+        cx = math.sin(tt)
+        cy = math.cos(tt) * math.sin(pp)
+        cz = math.cos(tt) * math.cos(pp)
+        
+        cr = math.hypot(math.hypot(cx, cy), cz)
+        ct = math.acos(cz / cr)
+        
+        if ct > (math.pi / 2.) * thr_now:
+           continue
+        
         diff = pi_w * disp
-        mgnt = b1 * math.sin(tt - diff) / math.sin(diff)
-
-        points[r, c] = np.array([xn, yn, zn], dtype='f') * mgnt
+        mgnt = bl * math.sin(c * pi_w - diff) / math.sin(diff)
+        
+        points[r, c] = np.array([cx, cy, cz], dtype='f') * mgnt
         colors[r, c] =  colors_img[r, c]
 
    points = points.reshape(-1, 3)
@@ -292,7 +268,6 @@ def main():
   raw_imgl = raw_img[:, : int(img_width)]
   raw_imgr = raw_img[:, int(img_width) : int(img_width * 2)]
 
-  rect_imgl_fisheye = cv2.remap(raw_imgl, fmap[0], fmap[1], cv2.INTER_LINEAR)
   rect_imgl_longlat = cv2.remap(raw_imgl, lmap[0][0], lmap[0][1], cv2.INTER_LINEAR)
   rect_imgr_longlat = cv2.remap(raw_imgr, lmap[1][0], lmap[1][1], cv2.INTER_LINEAR)
 
@@ -306,7 +281,7 @@ def main():
   out_fn = 'pdi_point_cloud.ply'
 
   print('Save %s' % out_fn)
-  write_ply(out_fn, disp_img, rect_imgl_fisheye)
+  write_ply(out_fn, disp_img, rect_imgl_longlat)
 
   print('Press \'q\' to finish')
   key = cv2.waitKey(0)

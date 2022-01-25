@@ -1,5 +1,5 @@
 
-// This is NWNC (No Warranty No Copyright) Software.
+// This is No Warranty No Copyright Software.
 // astar.ai
 // May 15, 2019
 
@@ -10,8 +10,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 int ndisp_bar = 1,   wsize_bar = 2, thr_bar = 0;
-int ndisp_max = 2,   wsize_max = 3, thr_max = 130;
-int ndisp_now = 32,  wsize_now = 9, thr_now = 190;
+int ndisp_max = 2,   wsize_max = 3, thr_max = 30;
+int ndisp_now = 32,  wsize_now = 9, thr_now = 70;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -28,14 +28,14 @@ void OnTrackWsize(int, void*) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void OnTrackThreshold(int, void*) {
-  thr_now = 190 + thr_bar;
+  thr_now = 70 + thr_bar;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 int     cap_cols, cap_rows, img_width;
 cv::Mat T, Kl, Kr, Dl, Dr, xil, xir, Rl, Rr;
-cv::Mat fmap[2], lmap[2][2], Kfe;
+cv::Mat lmap[2][2];
 
 // CaliCam stereo is calibrated at 2560x960
 // If you want to process image at 1280x480, set half_size to true.
@@ -94,7 +94,6 @@ void InitRectifyMap(cv::Mat K,
                     cv::Mat R,
                     cv::Mat Knew,
                     double xi0,
-                    double xi1,
                     cv::Size size,
                     RectMode mode,
                     cv::Mat& map1,
@@ -145,13 +144,11 @@ void InitRectifyMap(cv::Mat K,
       if (mode == RECT_FISHEYE) {
         double ee = MatRowMul(Ki, c, r, 1., 0);
         double ff = MatRowMul(Ki, c, r, 1., 1);
-
-        double ef = ee * ee + ff * ff;
-        double zz = (xi1 + sqrt(1. + (1. - xi1 * xi1) * ef)) / (ef + 1.);
+        double zz = 2. / (ee * ee + ff * ff + 1.);
 
         double xn = zz * ee;
         double yn = zz * ff;
-        double zn = zz - xi1;
+        double zn = zz - 1.;
 
         xc = MatRowMul(Ri, xn, yn, zn, 0);
         yc = MatRowMul(Ri, xn, yn, zn, 1);
@@ -182,29 +179,17 @@ void InitRectifyMap(cv::Mat K,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int rect_cols = 640, rect_rows = 480;
+int rect_cols = 640, rect_rows = 640;
 
 void InitRectifyMap() {
-  Kfe = cv::Mat::eye(3, 3, CV_64F);
-  Kfe.at<double>(0,0) = Kl.at<double>(0,0) * 0.4;
-
-  if (half_size)
-    Kfe.at<double>(0,0) = Kl.at<double>(0,0) * 0.8;
-
-  Kfe.at<double>(0,2) = rect_cols  / 2. - 0.5;
-  Kfe.at<double>(1,1) = Kfe.at<double>(0,0);
-  Kfe.at<double>(1,2) = rect_rows / 2. - 0.5;
-
   cv::Size img_size(rect_cols, rect_rows);
   cv::Mat  Kll = cv::Mat::eye(3, 3, CV_64F);
-  Kll.at<double>(0,0) = img_size.width  / M_PI;
-  Kll.at<double>(1,1) = img_size.height / M_PI;
+  Kll.at<double>(0,0) = (img_size.width - 1.) / CV_PI;
+  Kll.at<double>(1,1) = (img_size.height - 1.) / CV_PI;
 
-  InitRectifyMap(Kl, Dl, Rl, Kfe, xil.at<double>(0,0), xil.at<double>(0,0),
-                 img_size, RECT_FISHEYE, fmap[0], fmap[1]);
-  InitRectifyMap(Kl, Dl, Rl, Kll, xil.at<double>(0,0), 0.,
+  InitRectifyMap(Kl, Dl, Rl, Kll, xil.at<double>(0,0), 
                  img_size, RECT_LONGLAT, lmap[0][0], lmap[0][1]);
-  InitRectifyMap(Kr, Dr, Rr, Kll, xir.at<double>(0,0), 0.,
+  InitRectifyMap(Kr, Dr, Rr, Kll, xir.at<double>(0,0), 
                  img_size, RECT_LONGLAT, lmap[1][0], lmap[1][1]);
 }
 
@@ -244,50 +229,39 @@ struct PCL {
 };
 
 void PointClouds(const cv::Mat& disp_img,
-                 const cv::Mat& feim,
+                 const cv::Mat& color_img,
                  std::vector<PCL>& pcl_vec) {
-  double fx = Kfe.at<double>(0,0);
-  double fy = Kfe.at<double>(1,1);
-  double cx = Kfe.at<double>(0,2);
-  double cy = Kfe.at<double>(1,2);
   double bl = cv::norm(T);
-  double xi = xil.at<double>(0,0);
+  double pi_w = CV_PI / (rect_cols - 1.);
 
-  double w_pi = rect_cols  / M_PI;
-  double h_pi = rect_rows / M_PI;
-  double pi_w = M_PI / rect_cols;
-
-  for (int r = 0; r < feim.rows; ++r) {
-    for (int c = 0; c < feim.cols; ++c) {
-      if (hypot(c - cx, r - cy) > thr_now)
+  for (int r = 0; r < color_img.rows; ++r) {
+    for (int c = 0; c < color_img.cols; ++c) {
+      float disp = disp_img.at<float>(r, c);
+      if (disp <= 0.f) {
         continue;
+      }
 
-      double ee = (c - cx) / fx;
-      double ff = (r - cy) / fy;
-      double ef = ee * ee + ff * ff;
-      double zz = (xi + sqrt(1. + (1. - xi*xi) * ef)) / (ef + 1.);
+      double tt = (c / (color_img.cols - 1.) - 0.5) * CV_PI;
+      double pp = (r / (color_img.rows - 1.) - 0.5) * CV_PI;
+      
+      double cx = std::sin(tt);
+      double cy = std::cos(tt) * std::sin(pp);
+      double cz = std::cos(tt) * std::cos(pp);
 
-      if (isnan(zz))
+      double cr = hypot(hypot(cx, cy), cz);
+      double ct = std::acos(cz / cr);
+
+      if (ct > (CV_PI / 2.) * (thr_now / 100.)) {
         continue;
-
-      double xs = zz * ee;
-      double ys = zz * ff;
-      double zs = zz - xi;
-
-      double tt   = acos(-xs);
-      double pp   = acos(-ys / hypot(ys, zs));
-      float  disp = disp_img.at<float>((int) (pp * h_pi), (int) (tt * w_pi));
-
-      if (disp <= 0.f)
-        continue;
+      }
 
       double diff = pi_w * disp;
-      double mgnt = bl * sin(tt - diff) / sin(diff);
+      double mgnt = bl * sin(c * pi_w - diff) / sin(diff);
 
-      cv::Vec3b color = feim.at<cv::Vec3b>(r,c);
+      cv::Vec3b color = color_img.at<cv::Vec3b>(r,c);
 
       PCL pcl;
-      pcl.pts = cv::Vec3f(xs, ys, zs) * mgnt;
+      pcl.pts = cv::Vec3f(cx, cy, cz) * mgnt;
       pcl.clr = cv::Vec3b(color(2), color(1), color(0));
       pcl_vec.push_back(pcl);
     }
@@ -313,8 +287,16 @@ void DrawScene(const std::vector<PCL>& pcl_vec) {
 bool live = false; // To run live mode, you need a CaliCam from www.astar.ai
 
 int main(int argc, char** argv) {
-  std::string param_name = argc >= 2 ? argv[1] : "../astar_calicam.yml";
-  std::string image_name = argc == 3 ? argv[2] : "../wm_garden.jpg";
+  std::string param_name = "../astar_calicam.yml";
+  std::string image_name = "../wm_garden.jpg";
+
+  if (argc == 2) {
+    param_name = argv[1];
+  }
+  if (argc == 3) {
+    param_name = argv[1];
+    image_name = argv[2];
+  }
 
   LoadParameters(param_name);
   InitRectifyMap();
@@ -341,11 +323,11 @@ int main(int argc, char** argv) {
                      &ndisp_bar,  ndisp_max,   OnTrackNdisp);
   cv::createTrackbar("Blk   Size :     5  +  2 * ", win_name,
                      &wsize_bar,  wsize_max,  OnTrackWsize);
-  cv::createTrackbar("Threshold :     190 + ", win_name,
+  cv::createTrackbar("Threshold :     70 + ", win_name,
                      &thr_bar,    thr_max,    OnTrackThreshold);
 
   cv::Mat raw_img = cv::imread(image_name, cv::IMREAD_COLOR);
-  cv::Mat raw_imgl, raw_imgr, fe_img, ll_imgl, ll_imgr;
+  cv::Mat raw_imgl, raw_imgr, ll_imgl, ll_imgr;
 
   if (half_size)
     cv::resize(raw_img, raw_img, cv::Size(), 0.5, 0.5);
@@ -362,7 +344,6 @@ int main(int argc, char** argv) {
     raw_img(cv::Rect(        0, 0, img_width, cap_rows)).copyTo(raw_imgl);
     raw_img(cv::Rect(img_width, 0, img_width, cap_rows)).copyTo(raw_imgr);
 
-    cv::remap(raw_imgl, fe_img,  fmap[0],    fmap[1],    cv::INTER_LINEAR);
     cv::remap(raw_imgl, ll_imgl, lmap[0][0], lmap[0][1], cv::INTER_LINEAR);
     cv::remap(raw_imgr, ll_imgr, lmap[1][0], lmap[1][1], cv::INTER_LINEAR);
 
@@ -370,7 +351,7 @@ int main(int argc, char** argv) {
     std::vector<PCL> pcl_vec;
 
     DisparityImage(ll_imgl, ll_imgr, disp_img);
-    PointClouds(disp_img, fe_img, pcl_vec);
+    PointClouds(disp_img, ll_imgl, pcl_vec);
 
     if (scene.win.alive()) {
       if (scene.start_draw()) {
@@ -379,7 +360,7 @@ int main(int argc, char** argv) {
       }
     }
 
-    imshow(win_name, fe_img);
+    imshow(win_name, raw_imgl);
 
     char key = cv::waitKey(1);
     if (key == 'q' || key == 'Q' || key == 27)
