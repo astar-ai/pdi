@@ -57,7 +57,7 @@ PDI uses **GLWindow** library from [http://ethaneade.org/](http://ethaneade.org/
 Press 'q' or 'Esc' key on the 'Fisheye Image' window to exit.
 
 ### 6. Live Mode
-To run PDI in a live mode, please change the variable live to true:
+To run pdi.cpp in a live mode, please change the variable live to true. Python code does NOT support the live mode.
 
 	bool      live = true;
 
